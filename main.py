@@ -5,11 +5,10 @@ from src.ui.source_input import render_source_input, validate_sources
 # 1. Page Configuration
 st.set_page_config(
     page_title="Hallelujah - RAG Hallucination Checker",
-    page_icon="🔍",
     layout="wide",
 )
 
-st.title("🔍 Hallelujah: RAG Hallucination Checker")
+st.title("Hallelujah: RAG Hallucination Checker")
 st.markdown(
     "Verify the factual accuracy of AI-generated responses against trusted source evidence."
 )
