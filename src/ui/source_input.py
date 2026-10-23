@@ -1,0 +1,1 @@
+# Document upload & text paste component (SCRUM-35)
