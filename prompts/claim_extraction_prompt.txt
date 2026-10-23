@@ -1,0 +1,3 @@
+##Contains the exact instructions given to the Claim Extraction Agent.
+
+Role: Instructs Gemini to take raw text, decompose complex sentences into clear, atomic factual statements, ignore subjective opinions, and output them as a structured list.

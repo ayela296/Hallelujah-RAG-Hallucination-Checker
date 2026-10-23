@@ -1,0 +1,3 @@
+Contains the rules given to the Verification Agent.
+
+Role: Instructs Gemini to compare an extracted claim against retrieved source passages, strict rules on when to label something as Supported, Contradicted, or Not Found, and how to select exact matching quotes.

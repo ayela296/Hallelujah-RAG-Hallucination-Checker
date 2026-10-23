@@ -1,0 +1,23 @@
+# Web Framework & User Interface
+streamlit>=1.35.0
+
+# Official Google Gen AI SDK
+google-genai>=0.1.0
+
+# Document Processing & Parsing
+pypdf>=4.0.0
+python-docx>=1.1.0
+
+# RAG & Vector Database
+chromadb>=0.5.0
+
+# Data Validation & Schema Enforcement
+pydantic>=2.7.0
+
+# Environment & Network Utilities
+python-dotenv>=1.0.1
+requests>=2.31.0
+urllib3>=2.2.0
+
+# Automated Testing Framework
+pytest>=8.0.0
