@@ -13,10 +13,9 @@ def test_chunk_documents():
     chunks = chunk_documents(documents)
 
     assert len(chunks) == 4
-    assert chunks[0]["source"] == "file1.txt"
-    assert chunks[1]["source"] == "file1.txt"
-    assert chunks[2]["source"] == "file2.txt"
-    assert chunks[3]["source"] == "file2.txt"
+    assert [chunk["source"] for chunk in chunks] == [
+        "file1.txt", "file1.txt", "file2.txt", "file2.txt"
+    ]
 
 
 # Test 2: Single document chunking
@@ -31,12 +30,15 @@ def test_chunk_document():
 
 # Test 3: Chunk overlap
 def test_chunk_overlap():
-    text = " ".join(["hello"] * 300)
+    words = [f"word{i}" for i in range(300)]
+    text = " ".join(words)
 
     chunks = chunk_document(text, "test.txt")
 
-    assert len(chunks[0]["text"].split()) == 250
-    assert len(chunks[1]["text"].split()) == 90
+    first_words = chunks[0]["text"].split()
+    second_words = chunks[1]["text"].split()
+
+    assert first_words[-40:] == second_words[:40]
 
 
 # Test 4: Source name preservation
@@ -52,16 +54,14 @@ def test_chunk_index():
 
     chunks = chunk_document(text, "test.txt")
 
-    assert chunks[0]["chunk_index"] == 0
-    assert chunks[1]["chunk_index"] == 1
-    assert chunks[2]["chunk_index"] == 2
+    assert [chunk["chunk_index"] for chunk in chunks] == [0, 1, 2]
 
 
 # Test 6: Empty document
 def test_empty_document():
     chunks = chunk_document("", "empty.txt")
 
-    assert len(chunks) == 0
+    assert chunks == []
 
 
 # Test 7: Document smaller than chunk size
@@ -102,26 +102,20 @@ def test_invalid_text_type():
 
 # Test 12: Missing document name
 def test_missing_document_name():
-    documents = [{"content": "Hello world"}]
-
     with pytest.raises(ValueError):
-        chunk_documents(documents)
+        chunk_documents([{"content": "Hello world"}])
 
 
 # Test 13: Missing document content
 def test_missing_document_content():
-    documents = [{"name": "test.txt"}]
-
     with pytest.raises(ValueError):
-        chunk_documents(documents)
+        chunk_documents([{"name": "test.txt"}])
 
 
 # Test 14: Invalid document type
 def test_invalid_document_type():
-    documents = ["Hello world"]
-
     with pytest.raises(TypeError):
-        chunk_documents(documents)
+        chunk_documents(["Hello world"])
 
 
 # Test 15: Invalid documents input
