@@ -1,6 +1,7 @@
 ﻿import streamlit as st
 from src.ui.answer_input import render_answer_input
 from src.ui.source_input import render_source_input, validate_sources
+from src.rag.chunking import chunk_documents
 
 # 1. Page Configuration
 st.set_page_config(
@@ -38,10 +39,14 @@ if st.button("Run Hallucination Verification", type="primary", use_container_wid
     if not validate_sources():
         st.stop()
 
+    source_chunks = chunk_documents(source_documents)
+    st.session_state["source_chunks"] = source_chunks
+
     # Success State: Input Data Ready for Claim Extraction
     st.success(
         f"Ready for Claim Extraction! Processing 1 AI Answer "
-        f"({len(submitted_answer):,} chars) against {len(source_documents)} source document(s)."
+        f"({len(submitted_answer):,} chars) against {len(source_documents)} source document(s) "
+        f"split into {len(source_chunks)} passage(s)."
     )
     
-    # Next Pipeline Step: Pass submitted_answer & source_documents to Claim Extraction Agent
+    # Future retrieval/indexing steps can read the passages from session state.
