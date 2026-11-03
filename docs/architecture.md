@@ -8,6 +8,11 @@ passage contains `text`, `source`, and a zero-based `chunk_index`; the source
 name is carried through unchanged.
 
 The resulting passages are stored separately in
-`st.session_state["source_chunks"]` so a future retrieval/indexing step can
-consume them without replacing or modifying the original documents. This
-project does not currently implement retrieval or vector-store indexing.
+`st.session_state["source_chunks"]` so retrieval can consume them without
+replacing or modifying the original documents. The retrieval layer accepts
+extracted claim strings and chunk mappings, ranks passages with
+inverse-document-frequency-weighted token overlap, and returns each claim with
+up to three matching passages by default. Each passage includes its relevance
+score, source name, and chunk index; claims with no matching terms receive an
+empty evidence list. Retrieval operates on supplied chunks and does not create
+or manage a vector index.
