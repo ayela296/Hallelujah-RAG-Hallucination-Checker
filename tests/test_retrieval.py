@@ -1,6 +1,7 @@
 from src.rag.retrieval import retrieve_evidence
 
 
+# Checks that the top three passages include relevance scores and rank correctly.
 def test_retrieves_top_three_relevant_passages_in_rank_order():
     claims = ["Solar panels convert sunlight into electricity"]
     chunks = [
@@ -35,6 +36,7 @@ def test_retrieves_top_three_relevant_passages_in_rank_order():
     assert all(0 < passage["relevance_score"] <= 1 for passage in evidence)
 
 
+# Checks that evidence retains source names and chunk indexes across documents.
 def test_preserves_source_names_and_chunk_indexes_from_multiple_documents():
     chunks = [
         {
@@ -58,6 +60,7 @@ def test_preserves_source_names_and_chunk_indexes_from_multiple_documents():
     assert {passage["chunk_index"] for passage in evidence} == {2, 4}
 
 
+# Checks that a claim unrelated to the supplied chunks returns no evidence.
 def test_unrelated_claim_has_empty_evidence():
     chunks = [
         {
@@ -72,6 +75,7 @@ def test_unrelated_claim_has_empty_evidence():
     assert result == [{"claim": "Jupiter has many moons", "evidence": []}]
 
 
+# Checks that retrieval returns the claim with fully attributed evidence.
 def test_returns_claim_plus_evidence_structure():
     claim = "Rain clouds produce precipitation"
     chunks = [
@@ -95,6 +99,7 @@ def test_returns_claim_plus_evidence_structure():
     ]
 
 
+# Checks that callers can set a custom maximum number of retrieved passages.
 def test_accepts_a_custom_result_limit():
     chunks = [
         {"text": "Cats are mammals.", "source": "a.txt", "chunk_index": 0},
