@@ -8,6 +8,7 @@ from src.agents import claim_extractor
 from src.rag.claims import extract_and_store_claims
 
 
+# Replace Gemini with a controlled response so these tests never call the API.
 def mock_gemini(monkeypatch, response_text):
     captured = {}
 
