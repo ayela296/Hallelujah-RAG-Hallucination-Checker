@@ -9,7 +9,7 @@ It operates via a multi-agent pipeline: a **Claim Extraction Agent** breaks the 
 ## 📌 Key Highlights
 
 - **Granular Claim Extraction:** Breaks down multi-sentence AI responses into standalone, testable factual assertions.
-- **RAG-Powered Grounding:** Indexes `.pdf` and `.txt` reference documents using `ChromaDB` vector embeddings to locate matching passage evidence.
+- **RAG-Powered Grounding:** Chunks `.pdf` and `.txt` reference documents and supports Gemini embeddings with a persistent FAISS similarity index.
 - **Tri-State Verdict Engine:** Evaluates statements as **Supported**, **Contradicted**, or **Not Found** with direct source quote attribution.
 - **Type-Safe Multi-Agent Pipeline:** Enforces Pydantic schema validation on `gemini-2.5-flash` for deterministic inter-agent data flow.
 - **Interactive Streamlit UI:** Features real-time character bounds checking, color-coded verdict displays, and an interactive evidence inspector.
@@ -19,7 +19,7 @@ It operates via a multi-agent pipeline: a **Claim Extraction Agent** breaks the 
 
 Hallelujah/
 │
-├── .env                         # Local environment variables (GOOGLE_API_KEY) — Excluded from Git
+├── .env                         # Local keys (GEMINI_API_KEY, GOOGLE_API_KEY) — Excluded from Git
 ├── .env.example                 # Template configuration file for onboarding
 ├── .gitignore                   # Version control exclusions (.env, __pycache__, vector_db/)
 ├── README.md                    # Project documentation & setup instructions
@@ -44,4 +44,37 @@ Hallelujah/
     ├── ui/                      # Epic: UI Package
     ├── utils/                   # Epic: Utils Package
     ├── rag/                     # Epic: RAG Package
+    │   ├── embeddings.py        # Gemini embedding API integration
+    │   ├── vector_store.py      # Persistent FAISS index and cosine search
+    │   └── index_documents.py   # Document indexing/search CLI
     └── agents/                  # Epic: Agents Package
+
+## Semantic indexing and search
+
+Install the project dependencies:
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+Copy `.env.example` to `.env` and set `GEMINI_API_KEY` to a key from
+[Google AI Studio](https://aistudio.google.com). The `.env` file is ignored by
+Git. The embedding pipeline uses this key with Google's official Gen AI SDK.
+
+Index one or more PDF or TXT documents. The existing `chunk_documents`
+implementation is used, and the index is saved in `vector_db/`:
+
+```powershell
+python -m src.rag.index_documents .\documents\guide.pdf .\documents\notes.txt
+```
+
+Re-running the command skips chunks already in the index. To search the saved
+index (the default result limit is five):
+
+```powershell
+python -m src.rag.index_documents --search "What does the guide say about setup?"
+```
+
+The same indexing operation is available in the Streamlit app after chunks
+have been created with **Run Hallucination Verification**, using the
+**Build / update semantic search index** button.

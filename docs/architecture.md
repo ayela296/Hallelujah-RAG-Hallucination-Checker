@@ -9,10 +9,13 @@ name is carried through unchanged.
 
 The resulting passages are stored separately in
 `st.session_state["source_chunks"]` so retrieval can consume them without
-replacing or modifying the original documents. The retrieval layer accepts
-extracted claim strings and chunk mappings, ranks passages with
-inverse-document-frequency-weighted token overlap, and returns each claim with
-up to three matching passages by default. Each passage includes its relevance
-score, source name, and chunk index; claims with no matching terms receive an
-empty evidence list. Retrieval operates on supplied chunks and does not create
-or manage a vector index.
+replacing or modifying the original documents. Each passage also has a
+deterministic ID and can retain optional document metadata.
+
+The existing keyword retrieval layer remains available to rank passages using
+inverse-document-frequency-weighted token overlap. Semantic search is provided
+by `src.rag.embeddings` and `src.rag.vector_store`: the official Google Gen AI
+SDK generates `gemini-embedding-001` document/query vectors, and a normalized
+FAISS inner-product index ranks cosine similarity. The default index and its
+source text/metadata are persisted under `vector_db/`. Re-indexing skips
+existing chunk IDs. See the README for CLI commands and API-key setup.

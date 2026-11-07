@@ -1,11 +1,32 @@
+import hashlib
+import json
 from collections.abc import Iterable, Mapping
-from typing import TypedDict
+from typing import NotRequired, TypedDict
 
 
 class TextChunk(TypedDict):
     text: str
     source: str
     chunk_index: int
+    chunk_id: str
+    metadata: NotRequired[dict[str, object]]
+
+
+def _chunk_id(
+    text: str, source: str, chunk_index: int, metadata: Mapping[str, object]
+) -> str:
+    identity = json.dumps(
+        {
+            "text": text,
+            "source": source,
+            "chunk_index": chunk_index,
+            "metadata": metadata,
+        },
+        sort_keys=True,
+        ensure_ascii=False,
+        allow_nan=False,
+    )
+    return hashlib.sha256(identity.encode("utf-8")).hexdigest()
 
 
 def _validate_chunk_parameters(chunk_size: int, overlap: int) -> None:
@@ -43,6 +64,9 @@ def chunk_document(
                 "text": " ".join(words[start:end]),
                 "source": source,
                 "chunk_index": len(chunks),
+                "chunk_id": _chunk_id(
+                    " ".join(words[start:end]), source, len(chunks), {}
+                ),
             }
         )
         if end == len(words):
@@ -53,7 +77,7 @@ def chunk_document(
 
 
 def chunk_documents(
-    documents: Iterable[Mapping[str, str]],
+    documents: Iterable[Mapping[str, object]],
     chunk_size: int = 250,
     overlap: int = 40,
 ) -> list[TextChunk]:
@@ -70,12 +94,46 @@ def chunk_documents(
             raise TypeError("each document must be a mapping with name and content")
         if "name" not in document or "content" not in document:
             raise ValueError("each document must include name and content")
-        chunks.extend(
-            chunk_document(
-                text=document["content"],
-                source=document["name"],
-                chunk_size=chunk_size,
-                overlap=overlap,
-            )
+        if not isinstance(document["name"], str):
+            raise TypeError("document name must be a string")
+        if not isinstance(document["content"], str):
+            raise TypeError("document content must be a string")
+
+        supplied_metadata = document.get("metadata", {})
+        if not isinstance(supplied_metadata, Mapping):
+            raise TypeError("document metadata must be a mapping")
+        document_metadata = dict(supplied_metadata)
+        document_metadata.update(
+            {
+                key: value
+                for key, value in document.items()
+                if key not in {"name", "content", "metadata"}
+            }
         )
+        try:
+            json.dumps(
+                document_metadata,
+                sort_keys=True,
+                ensure_ascii=False,
+                allow_nan=False,
+            )
+        except (TypeError, ValueError) as error:
+            raise TypeError("document metadata must be JSON serializable") from error
+
+        document_chunks = chunk_document(
+            text=document["content"],
+            source=document["name"],
+            chunk_size=chunk_size,
+            overlap=overlap,
+        )
+        for chunk in document_chunks:
+            if document_metadata:
+                chunk["metadata"] = document_metadata
+            chunk["chunk_id"] = _chunk_id(
+                chunk["text"],
+                chunk["source"],
+                chunk["chunk_index"],
+                document_metadata,
+            )
+        chunks.extend(document_chunks)
     return chunks
