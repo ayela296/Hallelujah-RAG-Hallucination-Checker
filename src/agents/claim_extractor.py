@@ -1,5 +1,7 @@
 import os
 import json
+from typing import TypedDict
+from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
@@ -13,8 +15,19 @@ Follow these strict rules:
 4. Maintain factual integrity: Do not alter the meaning of the facts.
 """
 
-def extract_claims(answer_text: str) -> dict:
+
+class ClaimExtraction(TypedDict):
+    claims: list[str]
+
+
+def extract_claims(answer_text: str) -> ClaimExtraction:
     """Extracts atomic factual claims from an answer text using Gemini with structured JSON output."""
+    if not isinstance(answer_text, str):
+        raise TypeError("answer_text must be a string")
+    if not answer_text.strip():
+        raise ValueError("answer_text must not be empty")
+
+    load_dotenv()
     api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
     if not api_key:
         raise ValueError("Missing API Key! Please ensure GEMINI_API_KEY is set in your environment.")
@@ -47,22 +60,15 @@ def extract_claims(answer_text: str) -> dict:
         )
     )
 
+    if not response.text:
+        raise ValueError("Gemini returned an empty claim-extraction response.")
     try:
-        # Parse the JSON response safely
-        raw_text = response.text.strip()
-        # Handle potential markdown code block wrappers if any
-        if raw_text.startswith("```json"):
-            raw_text = raw_text[7:]
-        if raw_text.endswith("```"):
-            raw_text = raw_text[:-3]
-            
-        data = json.loads(raw_text.strip())
-        
-        # Ensure the 'claims' key exists and is a list, otherwise default to empty list
-        if not isinstance(data, dict) or "claims" not in data or not isinstance(data["claims"], list):
-            return {"claims": []}
-            
-        return data
-    except (json.JSONDecodeError, AttributeError):
-        # Handle bad output / parsing errors gracefully
-        return {"claims": []}
+        data = json.loads(response.text)
+    except json.JSONDecodeError as error:
+        raise ValueError("Gemini returned invalid JSON for claim extraction.") from error
+
+    if not isinstance(data, dict) or not isinstance(data.get("claims"), list):
+        raise ValueError("Gemini returned an invalid claims response.")
+    if any(not isinstance(claim, str) for claim in data["claims"]):
+        raise ValueError("Gemini returned a claim that is not text.")
+    return data
