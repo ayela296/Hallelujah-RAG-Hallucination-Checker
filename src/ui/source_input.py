@@ -45,6 +45,7 @@ def render_source_input() -> list[dict]:
                         doc_entry = {"name": file.name, "content": content.strip()}
                         if doc_entry not in st.session_state["source_documents"]:
                             st.session_state["source_documents"].append(doc_entry)
+                            st.session_state.pop("source_chunks", None)
                 st.success(f"Added {len(uploaded_files)} file(s) successfully.")
 
     # Tab 2: Pasted Text
@@ -57,6 +58,7 @@ def render_source_input() -> list[dict]:
             else:
                 doc_entry = {"name": doc_name.strip(), "content": pasted_text.strip()}
                 st.session_state["source_documents"].append(doc_entry)
+                st.session_state.pop("source_chunks", None)
                 st.success(f"Added '{doc_name}' successfully.")
 
     # Display accumulated sources
@@ -68,6 +70,7 @@ def render_source_input() -> list[dict]:
 
         if st.button("Clear All Sources", type="secondary"):
             st.session_state["source_documents"] = []
+            st.session_state.pop("source_chunks", None)
             st.rerun()
 
     return st.session_state["source_documents"]

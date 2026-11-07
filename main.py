@@ -1,6 +1,13 @@
 ﻿import streamlit as st
+import logging
+from google.genai.errors import APIError
 from src.ui.answer_input import render_answer_input
 from src.ui.source_input import render_source_input, validate_sources
+from src.rag.chunking import chunk_documents
+from src.rag.embeddings import GeminiEmbedder
+from src.rag.vector_store import FaissVectorStore
+
+logger = logging.getLogger(__name__)
 
 # 1. Page Configuration
 st.set_page_config(
@@ -38,10 +45,30 @@ if st.button("Run Hallucination Verification", type="primary", use_container_wid
     if not validate_sources():
         st.stop()
 
+    source_chunks = chunk_documents(source_documents)
+    st.session_state["source_chunks"] = source_chunks
+
     # Success State: Input Data Ready for Claim Extraction
     st.success(
         f"Ready for Claim Extraction! Processing 1 AI Answer "
-        f"({len(submitted_answer):,} chars) against {len(source_documents)} source document(s)."
+        f"({len(submitted_answer):,} chars) against {len(source_documents)} source document(s) "
+        f"split into {len(source_chunks)} passage(s)."
     )
-    
-    # Next Pipeline Step: Pass submitted_answer & source_documents to Claim Extraction Agent
+
+    # Future retrieval/indexing steps can read the passages from session state.
+
+if st.session_state.get("source_chunks"):
+    st.subheader("Semantic Search Index")
+    if st.button("Build / update semantic search index"):
+        try:
+            vector_store = FaissVectorStore()
+            indexed_count = vector_store.add_chunks(
+                st.session_state["source_chunks"], GeminiEmbedder()
+            )
+            st.success(
+                f"Embedded and stored {indexed_count} new chunk(s); "
+                f"the index now contains {vector_store.count} vector(s)."
+            )
+        except (APIError, OSError, RuntimeError, ValueError) as error:
+            logger.exception("Could not build the semantic search index")
+            st.error(f"Could not build the semantic search index: {error}")
