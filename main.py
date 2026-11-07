@@ -5,7 +5,7 @@ from src.ui.source_input import render_source_input, validate_sources
 # 1. Page Configuration
 st.set_page_config(
     page_title="Hallelujah - RAG Hallucination Checker",
-    page_icon="",
+    page_icon="🔍",
     layout="wide",
 )
 
