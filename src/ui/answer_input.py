@@ -1,5 +1,4 @@
-
-
+from __future__ import annotations
 import streamlit as st
 MAX_ANSWER_LENGTH = 5000
 

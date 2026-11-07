@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 # 1. Page Configuration
 st.set_page_config(
     page_title="Hallelujah - RAG Hallucination Checker",
+    page_icon="🔍",
     layout="wide",
 )
 
