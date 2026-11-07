@@ -48,6 +48,20 @@ def test_source_name():
     assert chunks[0]["source"] == "report.pdf"
 
 
+def test_document_metadata_and_chunk_id_are_preserved():
+    document = {
+        "name": "report.pdf",
+        "content": "Hello world",
+        "metadata": {"department": "research"},
+    }
+
+    chunks = chunk_documents([document])
+
+    assert chunks[0]["metadata"] == {"department": "research"}
+    assert chunks[0]["chunk_id"]
+    assert chunks[0]["chunk_id"] == chunk_documents([document])[0]["chunk_id"]
+
+
 # Test 5: Chunk index
 def test_chunk_index():
     text = " ".join(["hello"] * 600)
