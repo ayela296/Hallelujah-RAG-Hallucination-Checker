@@ -1,4 +1,4 @@
-# 🔍 Hallelujah — RAG Hallucination Checker
+# Hallelujah — RAG Hallucination Checker
 
 **Hallelujah** is an agentic AI application designed to combat factual hallucinations in AI-generated content. The system processes an AI-generated text along with trusted source documents and verifies each factual statement against provided evidence.
 
